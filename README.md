@@ -12,6 +12,10 @@ evohomeclient http://evohome-client.readthedocs.org/en/latest/
 pip install ./evohome-client
 ```
 
+python-munin framework
+http://samuelks.com/python-munin/
+
+
 python-weather-api https://code.google.com/p/python-weather-api/
 ```
 pip install --allow-all-external  pywapi  --allow-unverified pywapi
