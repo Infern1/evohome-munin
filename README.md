@@ -34,4 +34,4 @@ Further set your username and password for the honeywell portal
 For correct outside temperature lookup your location code at http://weather.com
 
 # Example #
-![example munin](https://raw.github.com/Infern1/evohome-munin/example_evohome_temperature.png)
+![example munin](https://raw.githubusercontent.com/Infern1/evohome-munin/master/example_evohome_temperature.png)
