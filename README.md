@@ -68,7 +68,7 @@ For example some system it should be:
 ln -s /usr/share/munin/plugins/evohome_ /etc/munin/plugins/evohome_Zonename
 ```
 
-** For the moment the zonenames should not contain spaces **
+**For the moment the zonenames should not contain spaces**
 
 
 Further set your username and password for the honeywell portal in the file evohome_
