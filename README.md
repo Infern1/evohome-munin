@@ -31,9 +31,19 @@ python setup.py install
 
 Find your plugins directory, this is depended on your OS
 ex: /etc/munin/plugin-conf.d/plugins
-
+and place the following there:
+```
 [evohome\*]
 user root
+```
+
+Download https://github.com/Infern1/evohome-munin/blob/master/evohome_
+and place it in your munin plugin folder eg.
+```
+/usr/local/share/munin/plugins/
+or
+/etc/munin/plugins
+```
 
 To activate the plugin make a symlink:
 ```
