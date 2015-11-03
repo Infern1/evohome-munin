@@ -104,6 +104,7 @@ class EvohomeMuninPlugin(MuninPlugin):
 
             with io.open(self.PERSISTENT_STORAGE, "wb") as f:
                 json.dump(data, f)
+            f.close()
 
     # write weather data to JSON file
     # if the file is not older than 15 minutes we don't need to fetch the data
@@ -131,6 +132,7 @@ class EvohomeMuninPlugin(MuninPlugin):
 
             with io.open(self.WEATHER_DATA, "wb") as f:
                 json.dump(weather, f)
+            f.close()
 
     # Get room temperature
     def getzoneinfo(self):
