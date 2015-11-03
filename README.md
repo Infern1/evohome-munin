@@ -68,10 +68,19 @@ For example some system it should be:
 ln -s /usr/share/munin/plugins/evohome_ /etc/munin/plugins/evohome_Zonename
 ```
 
-For the moment the zonenames should not contain spaces
+** For the moment the zonenames should not contain spaces **
 
-Further set your username and password for the honeywell portal
+
+Further set your username and password for the honeywell portal in the file evohome_
+
 For correct outside temperature lookup your location code at http://weather.com
+```
+    username = 'user@mail.com' 
+    password = 'yoursecretpassword'
+    location = 'NLXX0010'  
+```
+
+
 
 # Example #
 ![example munin](https://raw.githubusercontent.com/Infern1/evohome-munin/master/example_evohome_temperature.png)
