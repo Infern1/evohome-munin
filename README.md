@@ -46,7 +46,7 @@ Find your plugins directory, this is depended on your OS
 ex: /etc/munin/plugin-conf.d/plugins
 and place the following there:
 ```
-[evohome\*]
+[evohome*]
 user root
 ```
 
