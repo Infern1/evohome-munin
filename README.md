@@ -7,16 +7,27 @@ Also show the outside temperature based on location
 
 To make this plugin work make sure you install the following:
 
+## evohome-client
 evohomeclient http://evohome-client.readthedocs.org/en/latest/
 ```
 pip install ./evohome-client
 ```
 
-python-munin framework
+
+## python-munin framework
 http://samuelks.com/python-munin/
+```
+wget https://github.com/samuel/python-munin/archive/master.zip
+unzip master.zip
+cd python-munin-master/
+python setup.py build
+python setup.py install
+```
 
 
-python-weather-api https://code.google.com/p/python-weather-api/
+## python-weather-api 
+
+https://code.google.com/p/python-weather-api/
 ```
 pip install --allow-all-external  pywapi  --allow-unverified pywapi
 ```
@@ -28,6 +39,8 @@ cd  pywapi-0.3.8
 python setup.py build
 python setup.py install
 ```
+
+## Munin setup 
 
 Find your plugins directory, this is depended on your OS
 ex: /etc/munin/plugin-conf.d/plugins
