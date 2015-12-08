@@ -78,7 +78,7 @@ class EvohomeMuninPlugin(MuninPlugin):
 
     def __init__(self):
         super(EvohomeMuninPlugin, self).__init__()
-        self.zonename = (sys.argv[0].rsplit('_', 1)[-1]
+        self.zonename = (sys.argv[0].split('_', 1)[-1].replace('_',' ')
                 if self.zonename_in_args else None)
     # write zone info to JSON file
     # if the file is not older than 5 minutes we don't need to fetch the data

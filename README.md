@@ -68,8 +68,9 @@ For example some system it should be:
 ln -s /usr/share/munin/plugins/evohome_ /etc/munin/plugins/evohome_Zonename
 ```
 
-**For the moment the zonenames should not contain spaces**
+**For zone names containing spaces, replace the spaces with underscores in the symlink name**
 
+Zone names are case sensitive and must match the case entered on the Evotouch controller
 
 Further set your username and password for the honeywell portal in the file evohome_
 
