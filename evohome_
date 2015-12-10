@@ -87,11 +87,7 @@ class EvohomeMuninPlugin(MuninPlugin):
     # if the file is not older than 5 minutes we don't need to fetch the data
     def write_zone_info(self):
 
-        # Read or construct data persitent data
-        try:
-            data = json.load(io.open(self.PERSISTENT_STORAGE, "rb"))
-        except:
-            data = []
+        data = []
 
         try:
             stat = os.stat(self.PERSISTENT_STORAGE)
@@ -117,10 +113,6 @@ class EvohomeMuninPlugin(MuninPlugin):
     # write weather data to JSON file
     # if the file is not older than 15 minutes we don't need to fetch the data
     def write_weather_info(self):
-        try:
-            data = json.load(io.open(self.WEATHER_DATA, "rb"))
-        except:
-            data = []
 
         try:
             stat = os.stat(self.WEATHER_DATA)
