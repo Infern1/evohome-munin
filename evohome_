@@ -33,7 +33,7 @@ import io
 from pprint import pprint
 import pywapi
 from munin import MuninPlugin
-from evohomeclient2 import EvohomeClient
+from evohomeclient import EvohomeClient
 
 
 class EvohomeMuninPlugin(MuninPlugin):
@@ -98,7 +98,7 @@ class EvohomeMuninPlugin(MuninPlugin):
             age_minutes = (time.time() - stat.st_mtime) / 60
                 
         if age_minutes >= 5:
-            client = EvohomeClient(self.username, self.password, debug=False)
+            client = EvohomeClient(self.username, self.password)
             for device in client.temperatures():
                 data.append(device)
 
