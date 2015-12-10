@@ -101,7 +101,12 @@ class EvohomeMuninPlugin(MuninPlugin):
             age_minutes = (time.time() - stat.st_mtime) / 60
                 
         if age_minutes >= 5:
-            client = EvohomeClient(self.username, self.password)
+            try:
+                client = EvohomeClient(self.username, self.password)
+            except:
+                sys.stderr.write('Connection to the server failed or server returned an error.\n')
+                sys.exit(1)
+
             for device in client.temperatures():
                 data.append(device)
 
