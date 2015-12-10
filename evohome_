@@ -56,11 +56,14 @@ class EvohomeMuninPlugin(MuninPlugin):
             label="Temperature",
             info="Temperature in Room",
             type="GAUGE",
+            max="50"
         )),
         ('setpoint', dict(
             label="Temperature SP",
             info="Temperature Setpoint in Room",
             type="GAUGE",
+            max="35",
+            min="5"
         )),
         ('outside_temperature', dict(
             label="Outside Temperature",
