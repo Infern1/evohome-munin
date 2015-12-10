@@ -84,7 +84,7 @@ class EvohomeMuninPlugin(MuninPlugin):
         self.zonename = (sys.argv[0].split('_', 1)[-1].replace('_',' ')
                 if self.zonename_in_args else None)
     # write zone info to JSON file
-    # if the file is not older than 5 minutes we don't need to fetch the data
+    # if the file is not older than 4 minutes we don't need to fetch the data
     def write_zone_info(self):
 
         data = []
@@ -96,7 +96,7 @@ class EvohomeMuninPlugin(MuninPlugin):
         else:
             age_minutes = (time.time() - stat.st_mtime) / 60
                 
-        if age_minutes >= 5:
+        if age_minutes > 4:
             try:
                 client = EvohomeClient(self.username, self.password)
             except:
@@ -111,7 +111,7 @@ class EvohomeMuninPlugin(MuninPlugin):
             f.close()
 
     # write weather data to JSON file
-    # if the file is not older than 15 minutes we don't need to fetch the data
+    # if the file is not older than 14 minutes we don't need to fetch the data
     def write_weather_info(self):
 
         try:
@@ -121,7 +121,7 @@ class EvohomeMuninPlugin(MuninPlugin):
         else:
             age_minutes = (time.time() - stat.st_mtime) / 60
                 
-        if age_minutes >= 15:
+        if age_minutes > 14:
             weather_com_result = pywapi.get_weather_from_weather_com(self.location,  units = 'metric' ) 
             weather = dict()
 
