@@ -73,7 +73,7 @@ class EvohomeMuninPlugin(MuninPlugin):
     )
 
     zonename_in_args = True
-    category = "domotic"
+    category = "evohome"
 
     # This is the file which has the zone data
     PERSISTENT_STORAGE = "/tmp/munin-zone-data.json"
