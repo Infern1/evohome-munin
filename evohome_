@@ -20,7 +20,7 @@
     To activate the plugin make a symlink
     #ln -s /usr/local/share/munin/plugins/evohome_ /usr/local/etc/munin/plugins/evohome_Zonename
     
-    For the moment the zonenames should not contain spaces
+    For zone names containing spaces, replace the spaces with underscores in the symlink name
 """
 
 
