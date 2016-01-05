@@ -20,7 +20,7 @@
     To activate the plugin make a symlink
     #ln -s /usr/local/share/munin/plugins/evohome_ /usr/local/etc/munin/plugins/evohome_Zonename
     
-    For the moment the zonenames should not contain spaces
+    For zone names containing spaces, replace the spaces with underscores in the symlink name
 """
 
 
@@ -33,7 +33,7 @@ import io
 from pprint import pprint
 import pywapi
 from munin import MuninPlugin
-from evohomeclient2 import EvohomeClient
+from evohomeclient import EvohomeClient
 
 
 class EvohomeMuninPlugin(MuninPlugin):
@@ -56,11 +56,14 @@ class EvohomeMuninPlugin(MuninPlugin):
             label="Temperature",
             info="Temperature in Room",
             type="GAUGE",
+            max="50"
         )),
         ('setpoint', dict(
             label="Temperature SP",
             info="Temperature Setpoint in Room",
             type="GAUGE",
+            max="35",
+            min="5"
         )),
         ('outside_temperature', dict(
             label="Outside Temperature",
@@ -70,7 +73,7 @@ class EvohomeMuninPlugin(MuninPlugin):
     )
 
     zonename_in_args = True
-    category = "domotic"
+    category = "evohome"
 
     # This is the file which has the zone data
     PERSISTENT_STORAGE = "/tmp/munin-zone-data.json"
@@ -81,14 +84,10 @@ class EvohomeMuninPlugin(MuninPlugin):
         self.zonename = (sys.argv[0].split('_', 1)[-1].replace('_',' ')
                 if self.zonename_in_args else None)
     # write zone info to JSON file
-    # if the file is not older than 5 minutes we don't need to fetch the data
+    # if the file is not older than 4 minutes we don't need to fetch the data
     def write_zone_info(self):
 
-        # Read or construct data persitent data
-        try:
-            data = json.load(io.open(self.PERSISTENT_STORAGE, "rb"))
-        except:
-            data = []
+        data = []
 
         try:
             stat = os.stat(self.PERSISTENT_STORAGE)
@@ -97,8 +96,13 @@ class EvohomeMuninPlugin(MuninPlugin):
         else:
             age_minutes = (time.time() - stat.st_mtime) / 60
                 
-        if age_minutes >= 5:
-            client = EvohomeClient(self.username, self.password, debug=False)
+        if age_minutes > 4:
+            try:
+                client = EvohomeClient(self.username, self.password)
+            except:
+                sys.stderr.write('Connection to the server failed or server returned an error.\n')
+                sys.exit(1)
+
             for device in client.temperatures():
                 data.append(device)
 
@@ -107,12 +111,8 @@ class EvohomeMuninPlugin(MuninPlugin):
             f.close()
 
     # write weather data to JSON file
-    # if the file is not older than 15 minutes we don't need to fetch the data
+    # if the file is not older than 14 minutes we don't need to fetch the data
     def write_weather_info(self):
-        try:
-            data = json.load(io.open(self.WEATHER_DATA, "rb"))
-        except:
-            data = []
 
         try:
             stat = os.stat(self.WEATHER_DATA)
@@ -121,7 +121,7 @@ class EvohomeMuninPlugin(MuninPlugin):
         else:
             age_minutes = (time.time() - stat.st_mtime) / 60
                 
-        if age_minutes >= 15:
+        if age_minutes > 14:
             weather_com_result = pywapi.get_weather_from_weather_com(self.location,  units = 'metric' ) 
             weather = dict()
 
