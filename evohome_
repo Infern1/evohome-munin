@@ -157,9 +157,10 @@ class EvohomeMuninPlugin(MuninPlugin):
             if i['name'] == self.zonename:
                 temperature = i['temp']
                 setpoint = i['setpoint']
+                return temperature, setpoint,outside_temperature
 
-        return temperature, setpoint,outside_temperature
-
+        sys.stderr.write('Zone ' + self.zonename + ' not found. Please check the zone exists and is named correctly.\n')
+        sys.exit(1)
 
     @property
     def title(self):
