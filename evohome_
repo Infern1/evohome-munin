@@ -122,13 +122,17 @@ class EvohomeMuninPlugin(MuninPlugin):
             age_minutes = (time.time() - stat.st_mtime) / 60
                 
         if age_minutes > 14:
-            weather_com_result = pywapi.get_weather_from_weather_com(self.location,  units = 'metric' ) 
             weather = dict()
-
-            temp = weather_com_result['current_conditions']['temperature']    
-            station = weather_com_result['current_conditions']['station']    
-            weather['temperature'] = temp
-            weather['station'] = station
+            try:
+                weather_com_result = pywapi.get_weather_from_weather_com(self.location,  units = 'metric' )
+                temp = weather_com_result['current_conditions']['temperature']
+                station = weather_com_result['current_conditions']['station']
+                weather['temperature'] = temp
+                weather['station'] = station
+            except:
+                sys.stderr.write('Unable to retrieve weather data from weather.com.\n')
+                weather['temperature'] = 'U'
+                weather['station'] = 'Unknown'
 
             with io.open(self.WEATHER_DATA, "wb") as f:
                 json.dump(weather, f)
