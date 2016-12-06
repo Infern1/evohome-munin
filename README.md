@@ -56,8 +56,11 @@ user root
 ```
 
 Download https://github.com/Infern1/evohome-munin/blob/master/evohome_
+
+
 and place it in your munin plugin folder eg.
 ```
+wget https://raw.githubusercontent.com/Infern1/evohome-munin/master/evohome_
 /usr/local/share/munin/plugins/
 or
 /etc/munin/plugins
