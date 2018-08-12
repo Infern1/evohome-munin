@@ -89,7 +89,19 @@ For correct outside temperature lookup your location code at http://weather.com
     location = 'NLXX0010'  
 ```
 
+If you have hot water control also download https://github.com/Infern1/evohome-munin/blob/master/evohome_Hot_Water
 
+and place it directly in your active munin plugin folder eg.
+```
+wget https://raw.githubusercontent.com/Infern1/evohome-munin/master/evohome_Hot_Water
+/usr/local/etc/munin/munin/plugins/evohome_Hot_Water
+or
+/etc/munin/plugins
+```
+
+Set your username and password for the honeywell portal in the file evohome_Hot_Water as you did with evohome_
+also set your configured system hot water temperature for graphing purposes as this is not provided by the
+API.
 
 # Example #
 ![example munin](https://raw.githubusercontent.com/Infern1/evohome-munin/master/example_evohome_temperature.png)
