@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+
+"""
+    Plugin to show setpoint and measured temperature of hot water.
+    
+    To make this plugin work make sure you install the following:
+
+    evohomeclient http://evohome-client.readthedocs.org/en/latest/
+    #pip install ./evohome-client
+
+    ex: /etc/munin/plugin-conf.d/plugins
+    [evohome*]
+    user root
+
+    To activate the plugin copy evohome_Hot_Water to /usr/local/etc/munin/plugins/evohome_Hot_Water
+"""
+
+
+import os
+import logging
+import time
+import sys
+import json
+import io
+from pprint import pprint
+from munin import MuninPlugin
+from evohomeclient import EvohomeClient
+import evohomeclient2
+
+class EvohomeMuninPlugin(MuninPlugin):
+    
+    """
+    Set the below values to your own account
+    """
+    username = 'user@mail.com'
+    password = 'yoursecretpassword'
+
+    """
+    The API does not provide hot water set point only On or Off status. Enter your hot water
+    set point and off temperature here which will be used for graphing purposes. Use 'U' for
+    hotwateroff if you want no set point displayed during hot water off to allow the graph
+    to scale
+    """
+
+    hotwateron = 60
+    hotwateroff = 0
+#    hotwateroff = 'U'
+    
+    args = "--base 1000"  # -l 0 --upper-limit 100"
+    vlabel = "temperature"
+    scale = True
+
+    fields = (
+        ('temp', dict(
+            label="Temperature",
+            info="Hot Water Temperature",
+            type="GAUGE",
+            max="100",
+            min="0"
+        )),
+        ('setpoint', dict(
+            label="Temperature SP",
+            info="Hot Water Temperature Setpoint",
+            type="GAUGE",
+            max="100",
+            min="0"
+        )),
+    )
+
+    category = "evohome"
+
+    # This is the file which has the zone data
+    PERSISTENT_STORAGE = "/tmp/munin-zone-data.json"
+
+    def __init__(self):
+        super(EvohomeMuninPlugin, self).__init__()
+
+    # write zone info to JSON file
+    # if the file is not older than 4 minutes we don't need to fetch the data
+    def write_zone_info(self):
+
+        data = []
+
+        try:
+            stat = os.stat(self.PERSISTENT_STORAGE)
+        except OSError:
+            age_minutes = 10
+        else:
+            age_minutes = (time.time() - stat.st_mtime) / 60
+                
+        if age_minutes > 4:
+            try:
+                client = EvohomeClient(self.username, self.password)
+            except:
+                sys.stderr.write('Connection to the server failed or server returned an error.\n')
+                sys.exit(1)
+
+            for device in client.temperatures():
+                data.append(device)
+
+            with io.open(self.PERSISTENT_STORAGE, "wb") as f:
+                json.dump(data, f)
+            f.close()
+
+    # Get hot water temperature
+    def getzoneinfo(self):
+        self.write_zone_info()
+
+        # Read hot water zone data
+        try:
+            data = json.load(io.open(self.PERSISTENT_STORAGE, "rb"))
+        except:
+            data = []
+
+        # get hot water on/off status via V2 API - we don't need to cache the response because there is only one hot water zone
+        
+        try:
+            client2 = evohomeclient2.EvohomeClient(self.username, self.password)
+        except:
+            sys.stderr.write('Connection to the server failed or server returned an error.\n')
+            sys.exit(1)
+
+        status=client2.locations[0].status()
+
+        tcs=status['gateways'][0]['temperatureControlSystems'][0]
+        dhw=tcs['dhw']
+
+        setpoint = self.hotwateron if dhw['stateStatus']['state']=='On' else self.hotwateroff
+
+        # get the measured temperature from the matching V1 API zone
+        for i in data:
+            if int(i['id'])==int(dhw['dhwId']):
+                temperature = i['temp']
+                return temperature, setpoint
+
+        sys.stderr.write('Hot Water zone not found.\n')
+        sys.exit(1)
+
+    @property
+    def title(self):
+        return "Hot Water temperature"
+
+    def execute(self):
+        temperature, setpoint = self.getzoneinfo()
+        values = dict()
+        
+        values['temp'] = temperature
+        values['setpoint'] = setpoint
+        #print "temp.value %s" % temperature
+        #print "setpoint.value %s" % setpoint
+        return values
+
+
+if __name__ == "__main__":
+    EvohomeMuninPlugin().run()
+
