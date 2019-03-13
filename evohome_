@@ -3,7 +3,7 @@
 """
     Plugin to show setpoint and measured temperature of zone.
     Also show the outside temperature based on location
-    
+
     To make this plugin work make sure you install the following:
 
     evohomeclient http://evohome-client.readthedocs.org/en/latest/
@@ -19,7 +19,7 @@
 
     To activate the plugin make a symlink
     #ln -s /usr/local/share/munin/plugins/evohome_ /usr/local/etc/munin/plugins/evohome_Zonename
-    
+
     For zone names containing spaces, replace the spaces with underscores in the symlink name
 """
 
@@ -37,16 +37,16 @@ from evohomeclient import EvohomeClient
 
 
 class EvohomeMuninPlugin(MuninPlugin):
-    
+
     """
     Set the below values to your own account
 
     Look up your location id at weather.com
     """
-    username = 'user@mail.com' 
+    username = 'user@mail.com'
     password = 'yoursecretpassword'
-    location = 'NLXX0010'  
-    
+    location = 'NLXX0010'
+
     args = "--base 1000"  # -l 0 --upper-limit 40"
     vlabel = "temperature"
     scale = True
@@ -75,40 +75,65 @@ class EvohomeMuninPlugin(MuninPlugin):
     zonename_in_args = True
     category = "evohome"
 
-    # This is the file which has the zone data
-    PERSISTENT_STORAGE = "/tmp/munin-zone-data.json"
+    # Persistent storage of zone data, weather data and session id
+    ZONE_DATA = "/tmp/munin-zone-data.json"
     WEATHER_DATA = "/tmp/munin-outside-temperature.json"
+    SESSION_ID = "/tmp/munin-session-id.json"
 
     def __init__(self):
         super(EvohomeMuninPlugin, self).__init__()
         self.zonename = (sys.argv[0].split('_', 1)[-1].replace('_',' ')
                 if self.zonename_in_args else None)
+
+        if not self.zonename:
+            sys.stderr.write('No zone name specified. Please consult the documentation about creating a symlink which includes the zone name.\n')
+            sys.exit(1)
+        # strip group/other permissions from json cache files
+        os.umask(0o077)
+
     # write zone info to JSON file
     # if the file is not older than 4 minutes we don't need to fetch the data
     def write_zone_info(self):
 
         data = []
-
         try:
-            stat = os.stat(self.PERSISTENT_STORAGE)
+            stat = os.stat(self.ZONE_DATA)
         except OSError:
             age_minutes = 10
+            size = 1
         else:
             age_minutes = (time.time() - stat.st_mtime) / 60
-                
+            size = stat.st_size
+
         if age_minutes > 4:
+            # attempt to load previously saved session-id
             try:
-                client = EvohomeClient(self.username, self.password)
-            except:
-                sys.stderr.write('Connection to the server failed or server returned an error.\n')
+                with io.open(self.SESSION_ID, "rb") as f:
+                    user_data = json.load(f)
+            except (IOError, ValueError):
+                user_data = None
+
+            try:
+                client = EvohomeClient(self.username, self.password, user_data=user_data)
+                for device in client.temperatures():
+                    data.append(device)
+            except Exception as error:
+                sys.stderr.write('Connection failed: ' + str(error) + '\n')
+                # truncate zone data cache so subsequent zone instances know a failure occurred.
+                with io.open(self.ZONE_DATA, "wb") as f:
+                    pass
                 sys.exit(1)
 
-            for device in client.temperatures():
-                data.append(device)
-
-            with io.open(self.PERSISTENT_STORAGE, "wb") as f:
+            with io.open(self.ZONE_DATA, "wb") as f:
                 json.dump(data, f)
-            f.close()
+
+            # save session-id so we don't need to re-authenticate every polling cycle. This avoids authentication rate limiting.
+            with io.open(self.SESSION_ID, "wb") as f:
+                json.dump(client.user_data, f)
+        else:
+            if size == 0:
+                sys.stderr.write('Previous server connection failed. Waiting for next polling cycle to avoid rate limiting.\n')
+                sys.exit(1)
 
     # write weather data to JSON file
     # if the file is not older than 14 minutes we don't need to fetch the data
@@ -120,7 +145,7 @@ class EvohomeMuninPlugin(MuninPlugin):
             age_minutes = 20
         else:
             age_minutes = (time.time() - stat.st_mtime) / 60
-                
+
         if age_minutes > 14:
             weather = dict()
             try:
@@ -129,30 +154,31 @@ class EvohomeMuninPlugin(MuninPlugin):
                 station = weather_com_result['current_conditions']['station']
                 weather['temperature'] = temp
                 weather['station'] = station
-            except:
-                sys.stderr.write('Unable to retrieve weather data from weather.com.\n')
+            except Exception as error:
+                sys.stderr.write('Unable to retrieve ' + str(error) + ' from weather.com.\n')
                 weather['temperature'] = 'U'
                 weather['station'] = 'Unknown'
 
             with io.open(self.WEATHER_DATA, "wb") as f:
                 json.dump(weather, f)
-            f.close()
 
     # Get room temperature
     def getzoneinfo(self):
         self.write_zone_info()
         self.write_weather_info()
 
-        # Read  zone data
+        # Read zone data
         try:
-            data = json.load(io.open(self.PERSISTENT_STORAGE, "rb"))
-        except:
+            with io.open(self.ZONE_DATA, "rb") as f:
+                data = json.load(f)
+        except (IOError, ValueError):
             data = []
 
         # Read weather data
         try:
-            data_weather = json.load(io.open(self.WEATHER_DATA, "rb"))
-        except:
+            with io.open(self.WEATHER_DATA, "rb") as f:
+                data_weather = json.load(f)
+        except (IOError, ValueError):
             data_weather = []
 
         outside_temperature = data_weather['temperature']
@@ -173,10 +199,10 @@ class EvohomeMuninPlugin(MuninPlugin):
     def execute(self):
         temperature, setpoint, outside_temperature = self.getzoneinfo()
         values = dict()
-        
+
         values['temp'] = temperature
         values['setpoint'] = setpoint
-        values['outside_temperature'] = outside_temperature 
+        values['outside_temperature'] = outside_temperature
         #print "temp.value %s" % temperature
         #print "setpoint.value %s" % setpoint
         return values
