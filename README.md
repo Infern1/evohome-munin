@@ -13,6 +13,14 @@ evohomeclient http://evohome-client.readthedocs.org/en/latest/
 pip install evohomeclient
 ```
 
+Note: Version 0.3.1 or later of the evohomeclient library is now required, so please update the library if you are updating an existing evohome-munin installation. To check your existing version:
+```
+pip show evohomeclient
+```
+To upgrade an existing library:
+```
+pip install --upgrade evohomeclient
+```
 
 ## python-munin framework
 http://samuelks.com/python-munin/
